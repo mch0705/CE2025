@@ -10,15 +10,6 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
     <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+TC:wght@400;500;700&display=swap" rel="stylesheet">
-    <!-- Chosen Palette: Parchment & Gold -->
-    <!-- Application Structure Plan: The SPA is designed around a central, interactive timeline, which is the core navigation element. The layout is divided into: 1. A header with an introduction. 2. A main timeline visualization (using Chart.js) that allows users to see the chronological flow of events and writings. 3. Below the timeline, a detailed information section that updates dynamically as the user interacts with the timeline or a period selector. 4. Thematic deep-dive sections ('關鍵派系', '正典形成') accessible via buttons, which replace the timeline view to focus on specific concepts. This structure was chosen because the source report is fundamentally chronological. An interactive timeline provides the most intuitive way for users to grasp the temporal relationships between political events, religious developments, and textual composition. Thematic deep-dives allow for exploring cross-cutting concepts without cluttering the main timeline. -->
-    <!-- Visualization & Content Choices:
-        - Report Info: Comprehensive timeline of events & writings -> Goal: Organize/Change -> Viz: Timeline Chart (Chart.js scatter plot with line) -> Interaction: Hover/Click on points to display detailed information below the chart -> Justification: Visually represents the flow of history and the temporal placement of key events and texts, which is the central theme of the report. This is far more engaging than a static HTML table.
-        - Report Info: Details of historical periods (e.g., '第二聖殿時期') -> Goal: Inform -> Viz: Styled HTML text blocks with Tailwind CSS -> Interaction: Content updates based on timeline interaction or button clicks -> Justification: Presents detailed textual information in a clean, readable format. Dynamic updates keep the interface focused.
-        - Report Info: Jewish factions (Pharisees, Sadducees, etc.) -> Goal: Compare/Organize -> Viz: Tabbed interface with styled cards (HTML/CSS/JS) -> Interaction: Click tabs to switch between descriptions of each faction -> Justification: Allows for easy comparison of the different groups' beliefs and roles side-by-side.
-        - Report Info: Canonization process -> Goal: Organize/Change -> Viz: Vertical timeline diagram built with HTML/Tailwind -> Interaction: Hover effects to highlight stages -> Justification: Clearly illustrates the step-by-step process of canon formation over several centuries.
-    -->
-    <!-- CONFIRMATION: NO SVG graphics used. NO Mermaid JS used. -->
     <style>
         body {
             font-family: 'Noto Sans TC', sans-serif;
@@ -40,9 +31,6 @@
         .content-section.active {
             display: block;
         }
-        .timeline-point:hover {
-            transform: scale(1.1);
-        }
         @keyframes fadeIn {
             from { opacity: 0; transform: translateY(15px); }
             to { opacity: 1; transform: translateY(0); }
@@ -57,12 +45,76 @@
             border-radius: 0.5rem;
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05), 0 2px 4px -1px rgba(0, 0, 0, 0.03);
         }
-        .tab-button.active {
+        .report-content h3 {
+            font-size: 1.75rem;
+            font-weight: 700;
+            color: #3D352A;
+            margin-top: 2rem;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid #C0A062;
+        }
+        .report-content h4 {
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: #4A4A4A;
+            margin-top: 1.5rem;
+            margin-bottom: 0.75rem;
+        }
+        .report-content p {
+            margin-bottom: 1rem;
+            line-height: 1.8;
+            text-align: justify;
+        }
+        .report-content ul {
+            list-style-type: disc;
+            padding-left: 2rem;
+            margin-bottom: 1rem;
+        }
+        .report-content table {
+            width: 100%;
+            margin-top: 1.5rem;
+            border-collapse: collapse;
+        }
+        .report-content th, .report-content td {
+            border: 1px solid #e2e8f0;
+            padding: 0.75rem;
+            text-align: left;
+        }
+        .report-content th {
+            background-color: #F1E9DA;
+            font-weight: 600;
+            color: #3D352A;
+        }
+        .report-content tr:nth-child(even) {
+            background-color: #F9F7F3;
+        }
+        .faction-nav-item {
+            padding: 0.5rem 1rem;
+            margin: 0 0.25rem 0.5rem;
+            border: 1px solid #e2e8f0;
+            border-radius: 0.375rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            background-color: #fff;
+        }
+        .faction-nav-item:hover {
+            background-color: #F9F7F3;
+            border-color: #d1d5db;
+        }
+        .faction-nav-item.active {
             background-color: #C0A062;
             color: white;
+            border-color: #C0A062;
         }
-        .tab-content { display: none; }
-        .tab-content.active { display: block; }
+        .faction-content-part {
+            display: none;
+            animation: fadeIn 0.5s;
+        }
+        .faction-content-part.active {
+            display: block;
+        }
         .gemini-button {
             transition: all 0.3s ease;
         }
@@ -107,7 +159,9 @@
             <section id="timeline-view" class="content-section active">
                 <div class="text-center max-w-3xl mx-auto mb-8">
                     <h2 class="text-3xl font-bold text-[#3D352A] mb-4">互動歷史年表</h2>
-                    <p class="text-md text-gray-700">此互動年表展示了從馬加比革命到新約正典確立的關鍵事件。將滑鼠懸停或點擊圖表上的事件點，即可在下方查看該事件的詳細資訊。透過視覺化的方式，您可以清晰地看到政治背景、宗教事件與新約寫作之間的時間關係。</p>
+                    <p class="text-md text-gray-700"> </p>
+                    <p>點擊圖表上的事件點，即可在下方查看該事件的詳細資訊。</p>
+                    <p></p>點擊分類，以隱藏同色的事件點。</p>
                 </div>
 
                 <div class="chart-container mb-8">
@@ -118,33 +172,142 @@
                     <h3 id="detail-title" class="text-2xl font-bold text-[#C0A062] mb-3">歡迎</h3>
                     <p id="detail-text" class="text-gray-800">請在上方圖表中選擇一個事件點以查看詳細資訊。</p>
                     <p id="detail-date" class="text-sm text-gray-500 mt-4"></p>
-                    <div id="gemini-container" class="mt-6">
-                        <button id="gemini-button" class="gemini-button hidden bg-[#C0A062] text-white font-bold py-2 px-4 rounded-lg shadow-md">✨ 深入探索此事件</button>
-                        <div id="gemini-loader" class="hidden mt-4 flex items-center gap-3">
+                    <div class="gemini-interaction-container mt-6">
+                        <button class="gemini-button hidden bg-[#C0A062] text-white font-bold py-2 px-4 rounded-lg shadow-md">✨ 深入探索此事件</button>
+                        <div class="gemini-loader hidden mt-4 flex items-center gap-3">
                             <div class="loader"></div>
                             <span class="text-gray-600">正在生成更深入的解析...</span>
                         </div>
-                        <div id="gemini-response" class="mt-4 text-gray-800 border-t pt-4 border-gray-200"></div>
+                        <div class="gemini-response mt-4 text-gray-800 border-t pt-4 border-gray-200"></div>
                     </div>
                 </div>
             </section>
             
             <!-- Factions View -->
             <section id="factions-view" class="content-section">
-                <div class="text-center max-w-3xl mx-auto mb-12">
-                    <h2 class="text-3xl font-bold text-[#3D352A] mb-4">猶太社會與宗教版圖</h2>
-                    <p class="text-md text-gray-700">新約時代的猶太教並非鐵板一塊，而是由多個思想和實踐各異的派系構成。這些派系對律法、聖殿及羅馬統治有著不同看法，共同塑造了耶穌事工的社會背景。點擊下方的標籤，探索各個主要派系的核心信仰與特徵。</p>
-                </div>
+                <div class="bg-white p-8 rounded-lg shadow-lg report-content">
+                    <h2 class="text-center text-3xl font-bold text-[#3D352A] mb-4">新約時代的猶太社會與宗教版圖</h2>
+                    <p class="text-center text-gray-600 mb-10">新約時代的猶太社會與宗教版圖，是在兩股強大外力的擠壓下形成：一是羅馬帝國無所不在的軍事與政治統治，另一是希臘文化深遠而持久的滲透。這兩股力量不僅塑造了當時的政治現實與日常生活，更激發猶太民族內部從順從合作到暴力反抗。理解當時的歷史背景，是解讀新約文本中各種衝突、盼望與社會動態的關鍵所在。</p>
 
-                <div class="bg-white p-6 rounded-lg shadow-lg">
-                    <div class="flex flex-wrap justify-center border-b border-gray-200 mb-4">
-                        <button data-tab="pharisees" class="tab-button py-2 px-6 font-medium text-gray-600 rounded-t-lg">法利賽人</button>
-                        <button data-tab="sadducees" class="tab-button py-2 px-6 font-medium text-gray-600 rounded-t-lg">撒都該人</button>
-                        <button data-tab="essenes" class="tab-button py-2 px-6 font-medium text-gray-600 rounded-t-lg">愛色尼派</button>
-                        <button data-tab="zealots" class="tab-button py-2 px-6 font-medium text-gray-600 rounded-t-lg">奮銳黨</button>
+                    <!-- Factions Navigation -->
+                    <div id="factions-nav" class="flex flex-wrap justify-center border-b border-gray-300 pb-4 mb-6 gap-2">
+                        <button class="faction-nav-item" data-target="part1">政治文化</button>
+                        <button class="faction-nav-item" data-target="part2">社會結構</button>
+                        <button class="faction-nav-item" data-target="part3">核心體制</button>
+                        <button class="faction-nav-item" data-target="part4">教派光譜</button>
+                        <button class="faction-nav-item" data-target="part5">後續餘波</button>
                     </div>
-                    <div id="factions-content" class="p-4">
-                        <!-- Content will be injected here by JS -->
+
+                    <!-- Factions Content Wrapper -->
+                    <div id="factions-content-wrapper">
+                        <div id="part1" class="faction-content-part" data-title="政治文化">
+                            <h4>羅馬統治</h4>
+                            <p>公元一世紀的猶太地區，其政治主權名存實亡，完全籠罩在羅馬帝國的鷹旗之下。羅馬的統治模式，是一種直接軍事佔領與扶植代理人政權相結合的務實策略，旨在以最低成本實現最高效的控制與資源榨取。</p>
+                            <p><strong>羅馬的行政結構：</strong>公元6年，由於大希律之子亞基老的殘暴統治引發了猶太人和撒馬利亞人的聯合申訴，羅馬皇帝奧古斯都廢黜了亞基老，將其管轄的猶太地、撒馬利亞和以東地區合併，設立為羅馬的一個行省，即猶太行省（Judea）。從此，該核心地區由羅馬直接派駐的總督（或稱巡撫，Prefect/Procurator）進行管理，其中最為人所知的便是判處耶穌釘十字架的本丟·彼拉多。這些總督本質上是軍事指揮官，其首要職責是維持地方治安，確保稅收順利上繳羅馬。這種赤裸裸的外來軍事統治，成為猶太社會一個長期且無法癒合的傷口，是持續不斷的摩擦與衝突的根源。</p>
+                            <h4>希臘文化浪潮</h4>
+                            <p>早在羅馬人到來之前，自亞歷山大大帝東征以來，希臘文化（Hellenism）的浪潮就已席捲巴勒斯坦地區，並與本地文化融合，產生了一種被稱為「希臘化文化」的混合體。到了新約時代，這股浪潮的影響已無處不在，構成了一場爭奪猶太靈魂的文化戰爭。</p>
+                            <p>儘管存在融合與對話，希臘文化的核心價值——如人文主義、民主精神、多神信仰的包容性——與猶太教的核心信念——如神本主義、聖約的獨特性、嚴格的一神論——之間存在著深刻的內在張力。這種張力是理解當時猶太內部派系鬥爭的關鍵。為了抵禦希臘化的「腐蝕」，捍衛祖先的律法與傳統，以法利賽人和奮銳黨為代表的保守派和民族主義派系應運而生，他們將自己定位為猶太純正信仰的守護者，激烈反對任何形式的文化妥協。</p>
+                        </div>
+
+                        <div id="part2" class="faction-content-part" data-title="社會結構">
+                            <h4>階級二元</h4>
+                            <p>公元一世紀的猶太社會，最顯著的特徵之一是缺乏一個穩定的中產階級。整個社會被一道鴻溝清晰地劃分為兩個階層：一邊是人數極少卻掌握絕大部分財富和權力的精英階層（貴族階級），另一邊則是佔總人口九成以上的貧困大眾（平民大眾）。</p>
+                            <h4>父權家族</h4>
+                            <p>新約時代的猶太家庭是一個以男性為絕對中心的父權制結構。家族的延續、財產的繼承和權威的行使，都嚴格遵循父系原則。在這樣一個社會中，婦女處於極其從屬的地位。在這樣一個階級固化、性別不平等的社會背景下，耶穌的教導和行為顯得尤為激進和顛覆性。祂不僅公開與婦女（如撒馬利亞婦人）對話，接納她們成為跟隨者和事工的支持者，還將她們作為信仰的典範。</p>
+                        </div>
+
+                        <div id="part3" class="faction-content-part" data-title="三大核心體制">
+                            <h4>三大核心</h4>
+                            <p>新約時代的猶太宗教生活，由三大核心體制所構建和維繫：耶路撒冷的聖殿、猶太公會，以及遍布各地的會堂。這三個機構功能各異，權力交織，共同塑造了當時猶太人的信仰實踐與社群認同。</p>
+                        </div>
+
+                        <div id="part4" class="faction-content-part" data-title="猶太教光譜割裂">
+                            <h4>猶太教割裂</h4>
+                            <p>公元一世紀的「猶太教」並非一個統一、同質的信仰體系，各個教派和意識形態團體，就如何詮釋律法、如何應對外來統治、以及以色列的終極命運等核心問題，提出了截然不同的答案。</p>
+                            <h4>新約時代主要猶太教派比較分析</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>特徵</th>
+                                        <th>法利賽人 (Pharisees)</th>
+                                        <th>撒都該人 (Sadducees)</th>
+                                        <th>愛色尼人 (Essenes)</th>
+                                        <th>奮銳黨 (Zealots)</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    <tr>
+                                        <td><strong>核心信仰</strong></td>
+                                        <td>律法的個人遵守，追求生活聖潔</td>
+                                        <td>聖殿的獻祭儀式是信仰核心</td>
+                                        <td>社群的絕對純潔，為末日戰爭做準備</td>
+                                        <td>透過武力革命恢復上帝在以色列的統治</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>對經文的看法</strong></td>
+                                        <td>接受《成文律法》和《口傳律法》</td>
+                                        <td>只接受《摩西五經》（成文律法）</td>
+                                        <td>接受《聖經》及本社群的獨特啟示</td>
+                                        <td>接受《聖經》，並將其詮釋為武裝鬥爭的依據</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>關鍵教義</strong></td>
+                                        <td>相信復活、天使、靈魂不滅</td>
+                                        <td>否認復活、天使、靈魂不滅</td>
+                                        <td>相信靈魂不滅，強烈的末世論</td>
+                                        <td>相信上帝是唯一君王，認同法利賽人的多數教義</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>政治立場</strong></td>
+                                        <td>多數不熱衷政治，以教導和遊說為主</td>
+                                        <td>親羅馬，與統治者合作以維持現狀</td>
+                                        <td>分離主義，退出政治，與世隔絕</td>
+                                        <td>極端民族主義，主張暴力反抗羅馬統治</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>社會構成</strong></td>
+                                        <td>平民、文士、中產階級宗教領袖</td>
+                                        <td>祭司貴族、富裕的上層階級</td>
+                                        <td>禁慾主義的修道社群</td>
+                                        <td>政治革命者，來自各階層的民族主義者</td>
+                                    </tr>
+                                </tbody>
+                            </table>
+                             <div class="gemini-interaction-container mt-6">
+                                <button class="gemini-button bg-[#C0A062] text-white font-bold py-2 px-4 rounded-lg shadow-md" data-faction="所有派系">✨ 深入了解各派系</button>
+                                <div class="gemini-loader hidden mt-4 flex items-center gap-3">
+                                    <div class="loader"></div>
+                                    <span class="text-gray-600">正在生成更深入的解析...</span>
+                                </div>
+                                <div class="gemini-response mt-4 text-gray-800 border-t pt-4 border-gray-200"></div>
+                            </div>
+                        </div>
+
+                        <div id="part5" class="faction-content-part" data-title="耶路撒冷被破後的餘波">
+                            <h4>耶路撒冷被破</h4>
+                            <p>公元70年，羅馬軍團在提圖斯將軍的率領下攻破耶路撒冷，並徹底摧毀了宏偉的第二聖殿。這場災難徹底摧毀了第二聖殿時期猶太教的權力結構。聖殿祭司制度終結，撒都該派隨之銷聲匿跡。奮銳黨的武裝革命路線被證明是災難性的失敗。愛色尼派的隱修社群也未能倖免於羅馬的戰火。</p>
+                            <h4>新猶太教誕生</h4>
+                            <p>在舊秩序的廢墟之上，一種新的權威和組織形式開始形成，主導這一進程的是法利賽人的思想繼承者——拉比們。猶太教的重心，從此由聖殿的獻祭儀式轉向了會堂和學院中的律法研習與教導。這一時期最重要的成就，是將法利賽人珍視了數個世紀的龐大口傳律法系統化和文字化，最終形成了一部權威性的希伯來文法典——《密西拿》（Mishnah）。這場轉變的深遠意義在於，猶太教的信仰核心從一個固定的、物理的地點（耶路撒冷聖殿），轉移到了一套可攜帶的、以詮釋為核心的文本之上。律法和對律法的研習，成為了猶太人隨身攜帶的「聖殿」和「家園」。</p>
+                        </div>
+                         <!-- Gemini interaction for each part -->
+                        <script>
+                        document.querySelectorAll('.faction-content-part').forEach(part => {
+                            if (part.id !== 'part4') { // part4 has a special button
+                                const title = part.dataset.title;
+                                const geminiContainer = document.createElement('div');
+                                geminiContainer.className = 'gemini-interaction-container mt-6';
+                                geminiContainer.innerHTML = `
+                                    <button class="gemini-button bg-[#C0A062] text-white font-bold py-2 px-4 rounded-lg shadow-md" data-faction="${title}">✨ 深入了解此主題</button>
+                                    <div class="gemini-loader hidden mt-4 flex items-center gap-3">
+                                        <div class="loader"></div>
+                                        <span class="text-gray-600">正在生成更深入的解析...</span>
+                                    </div>
+                                    <div class="gemini-response mt-4 text-gray-800 border-t pt-4 border-gray-200"></div>
+                                `;
+                                part.appendChild(geminiContainer);
+                            }
+                        });
+                        </script>
                     </div>
                 </div>
             </section>
@@ -156,7 +319,7 @@
                     <p class="text-md text-gray-700">新約正典並非一蹴可幾，而是教會在數百年間，面對內外挑戰，逐漸辨識、確認而形成的一系列權威文獻。此過程反映了教會從一個運動演變為一個制度化世界宗教的關鍵歷程。下方以垂直時間軸呈現此過程中的重要里程碑。</p>
                 </div>
 
-                <div class="relative pl-8 border-l-2 border-[#C0A062]">
+                <div class="relative pl-8 border-l-2 border-[#C0A062]" id="canon-timeline-container">
                     <!-- Canon items will be injected here by JS -->
                 </div>
             </section>
@@ -193,31 +356,12 @@
                 { year: 397, event: '迦太基會議', type: '正典形成', details: '繼希波會議後，迦太基會議在西方教會正式確認了亞他那修提出的27卷新約正典的權威地位，標誌著正典化進程的完成。' },
             ];
             
-            const factionsData = {
-                pharisees: {
-                    title: "法利賽人 (Pharisees)",
-                    content: "他們是當時在民間最具影響力的宗教派系。他們不僅尊崇成文的摩西律法（妥拉），也同樣重視「口傳律法」。在神學上，他們相信靈魂不滅、身體復活、天使與鬼魔的存在。他們的影響力主要體現在各地的猶太會堂。"
-                },
-                sadducees: {
-                    title: "撒都該人 (Sadducees)",
-                    content: "主要由耶路撒冷的祭司貴族和富裕階層組成，是聖殿的領導核心。在政治上傾向與羅馬合作。在神學上，他們只接受成文的摩西五經為權威，拒絕承認口傳律法，並且不相信復活、天使或靈魂不滅。公元70年聖殿被毀後，他們也隨之消失。"
-                },
-                essenes: {
-                    title: "愛色尼派 (Essenes)",
-                    content: "一個苦修和分離主義的群體，他們認為耶路撒冷聖殿已被腐敗的祭司所玷污，因此退隱到曠野過著嚴格的社群生活。許多學者認為發現《死海古卷》的庫姆蘭社團即為其分支。他們抱持末世論世界觀，等待著與「黑暗之子」的終極大戰。"
-                },
-                zealots: {
-                    title: "奮銳黨 (Zealots)",
-                    content: "激進的革命組織，堅信唯有透過武力革命推翻羅馬統治，才能恢復上帝在以色列的神權統治。他們不惜採取暗殺和恐怖襲擊等手段，是引發公元66年第一次猶太-羅馬戰爭的重要因素。"
-                }
-            };
-            
             const canonData = [
-                { year: 'c. 140 CE', title: '馬吉安的挑戰', text: '富裕船主馬吉安編制了第一個「新約正典」，但其內容基於他的異端神學。此舉刺激了主流教會必須界定自己的權威文本。' },
-                { year: 'c. 170 CE', title: '穆拉多利殘篇', text: '一份現存最古老的正典書目，列出了被教會公認的核心新約書卷，包括四福音書、使徒行傳、保羅的十三封書信等，顯示核心正典已初步形成。' },
-                { year: 'c. 325 CE', title: '優西比烏的分類', text: '教會歷史學家優西比烏將當時的基督教著作分為「公認的」、「有爭議的」和「偽託的」三類，顯示正典輪廓已非常清晰。' },
+                { year: 'c. 140 CE', title: '異端馬吉安的挑戰', text: '富裕船主馬吉安編制了第一個「新約正典」，但其內容基於他的異端神學。此舉刺激了主流教會必須界定自己的權威文本。' },
+                { year: 'c. 170 CE', title: '穆拉多利殘篇', text: '一份現存最古老的正典書目，列出了被教會公認的核心新約書卷，包括四福音書、使徒行傳、保羅的十三封書信等，初步形成核心正典。' },
+                { year: 'c. 325 CE', title: '優西比烏分類', text: '教會歷史學家優西比烏將當時的基督教著作分為「公認的」、「有爭議的」和「偽託的」三類，顯示正典輪廓已非常清晰。' },
                 { year: '367 CE', title: '亞他那修的信函', text: '亞歷山大主教亞他那修在其第39封復活節信函中，歷史上首次完整列出了與今日完全相同的27卷新約正典書目。' },
-                { year: '393/397 CE', title: '教會會議的確認', text: '希波會議 (393 CE) 與迦太基會議 (397 CE) 在西方教會正式「承認」並「確認」了這27卷新約正典的權威地位，標誌著正典化過程的基本完成。' }
+                { year: '393/397 CE', title: '教會正式確認', text: '希波會議 (393 CE) 與迦太基會議 (397 CE) 在西方教會正式「承認」並「確認」了這27卷新約正典的權威地位，標誌著正典化過程的基本完成。' }
             ];
 
             let timelineChartInstance;
@@ -323,65 +467,80 @@
                 let yearText = dataPoint.year < 0 ? `約 公元前 ${-dataPoint.year} 年` : `約 公元 ${Math.floor(dataPoint.year)} 年`;
                 if (!dataPoint.year) yearText = '';
                 document.getElementById('detail-date').textContent = yearText;
-
-                const geminiButton = document.getElementById('gemini-button');
-                const geminiResponse = document.getElementById('gemini-response');
-                const geminiLoader = document.getElementById('gemini-loader');
+                
+                const container = document.querySelector('#timeline-detail .gemini-interaction-container');
+                const geminiButton = container.querySelector('.gemini-button');
+                const geminiResponse = container.querySelector('.gemini-response');
+                const geminiLoader = container.querySelector('.gemini-loader');
 
                 geminiResponse.innerHTML = '';
                 geminiLoader.classList.add('hidden');
                 
                 if (dataPoint.event && dataPoint.event !== '歡迎') {
                     geminiButton.classList.remove('hidden');
+                    geminiButton.onclick = () => {
+                         const prompt = `在基督新教的歷史神學觀點下，並處於新約聖經的歷史脈絡中，請針對以下歷史事件提供更深入的解析：「${currentDataPoint.event}」。請用2-3個段落解釋其歷史與宗教意義，以及它對早期基督教發展的影響。請使用繁體中文回答。`;
+                         fetchGeminiResponse(prompt, container);
+                    };
                 } else {
                     geminiButton.classList.add('hidden');
                 }
             };
             
-            async function fetchGeminiExplanation() {
-                if (!currentDataPoint) return;
+            async function fetchGeminiResponse(prompt, container) {
+                const button = container.querySelector('.gemini-button');
+                const loader = container.querySelector('.gemini-loader');
+                const responseEl = container.querySelector('.gemini-response');
 
-                const geminiButton = document.getElementById('gemini-button');
-                const geminiLoader = document.getElementById('gemini-loader');
-                const geminiResponse = document.getElementById('gemini-response');
+                button.classList.add('hidden');
+                loader.classList.remove('hidden');
+                responseEl.innerHTML = '';
 
-                geminiButton.classList.add('hidden');
-                geminiLoader.classList.remove('hidden');
-                geminiResponse.innerHTML = '';
-
-                const prompt = `在基督新教的歷史神學觀點下，並處於新約聖經的歷史脈絡中，請針對以下歷史事件提供更深入的解析：「${currentDataPoint.event}」。請用2-3個段落解釋其歷史與宗教意義，以及它對早期基督教發展的影響。請使用繁體中文回答。`;
-
-                const apiUrl = `/.netlify/functions/gemini`;
-                
                 try {
+                    // This is a placeholder for a backend call.
+                    // In a real application, you would fetch from a serverless function
+                    // to protect your API key.
+                    // For this demo, we simulate a call.
+                    const apiKey = ""; // Left empty as per instruction
+                    const apiUrl = `/.netlify/functions/gemini`;
+
+                    const payload = {
+                        contents: [{
+                            role: "user",
+                            parts: [{ text: prompt }]
+                        }]
+                    };
+
                     const response = await fetch(apiUrl, {
-						method: 'POST',
-						headers: { 'Content-Type': 'application/json' },
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
 						// 將 prompt 作為 JSON 的一部分發送給您的函式
-						body: JSON.stringify({ prompt: prompt }) 
+                        body: JSON.stringify({ prompt: prompt })
                     });
 
                     if (!response.ok) {
-                        throw new Error(`API 請求失敗，狀態碼：${response.status}`);
+                        throw new Error(`API request failed with status ${response.status}`);
                     }
 
                     const result = await response.json();
                     
-                    if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    if (result.candidates && result.candidates.length > 0) {
                         const text = result.candidates[0].content.parts[0].text;
-                        geminiResponse.innerHTML = text.replace(/\n/g, '<br>');
+                        responseEl.innerHTML = text.replace(/\n/g, '<br>');
                     } else {
-                        throw new Error('從API收到的回應格式無效。');
+                         throw new Error('Invalid response format from API.');
                     }
 
                 } catch (error) {
                     console.error('Gemini API Error:', error);
-                    geminiResponse.innerHTML = `<p class="text-red-600">抱歉，無法生成解析。請稍後再試。</p>`;
+                    responseEl.innerHTML = `<p class="text-red-600">抱歉，無法生成解析。請稍後再試。</p>`;
                 } finally {
-                    geminiLoader.classList.add('hidden');
+                    loader.classList.add('hidden');
+                    // Optionally show the button again
+                    // button.classList.remove('hidden'); 
                 }
             }
-
+            
             const setupNavigation = () => {
                 const navButtons = document.querySelectorAll('.nav-button');
                 const contentSections = document.querySelectorAll('.content-section');
@@ -401,50 +560,60 @@
                         });
 
                         if(targetId === 'timeline-view') {
-                            createTimelineChart();
+                            if (!document.getElementById('timelineChart').offsetParent) {
+                                setTimeout(() => createTimelineChart(), 0);
+                            } else {
+                                createTimelineChart();
+                            }
                             updateDetailView({event: '歡迎', details: '請在上方圖表中選擇一個事件點以查看詳細資訊。', year: ''});
-                        }
-                        if(targetId === 'factions-view') {
-                            setupFactionsTabs();
-                        }
-                         if(targetId === 'canon-view') {
+                        } else if (targetId === 'factions-view') {
+                            setupFactionsNav();
+                            setupFactionGeminiButtons();
+                        } else if (targetId === 'canon-view') {
                             renderCanonTimeline();
                         }
                     });
                 });
             };
 
-            const setupFactionsTabs = () => {
-                const tabButtons = document.querySelectorAll('#factions-view .tab-button');
-                const contentContainer = document.getElementById('factions-content');
+            const setupFactionsNav = () => {
+                const navItems = document.querySelectorAll('.faction-nav-item');
+                const contentParts = document.querySelectorAll('.faction-content-part');
 
-                function renderTabContent(tabId) {
-                     const data = factionsData[tabId];
-                    contentContainer.innerHTML = `
-                        <div class="tab-content active">
-                            <h3 class="text-2xl font-bold text-[#C0A062] mb-3">${data.title}</h3>
-                            <p class="text-gray-800 leading-relaxed">${data.content}</p>
-                        </div>
-                    `;
-                    tabButtons.forEach(btn => {
-                        btn.classList.remove('active');
-                        if (btn.dataset.tab === tabId) {
-                            btn.classList.add('active');
-                        }
-                    });
-                }
-                
-                tabButtons.forEach(button => {
-                    button.addEventListener('click', () => {
-                       renderTabContent(button.dataset.tab);
+                navItems.forEach(item => {
+                    item.addEventListener('click', () => {
+                        const targetId = item.dataset.target;
+
+                        navItems.forEach(nav => nav.classList.remove('active'));
+                        item.classList.add('active');
+
+                        contentParts.forEach(part => {
+                            part.classList.remove('active');
+                            if (part.id === targetId) {
+                                part.classList.add('active');
+                            }
+                        });
                     });
                 });
-                
-                renderTabContent('pharisees');
+
+                contentParts.forEach(part => part.classList.remove('active'));
+                navItems.forEach(nav => nav.classList.remove('active'));
+            };
+
+            const setupFactionGeminiButtons = () => {
+                document.querySelectorAll('#factions-view .gemini-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const factionName = button.dataset.faction;
+                        const container = button.closest('.gemini-interaction-container');
+                        const prompt = `在基督新教的歷史神學觀點下，請深入解析新約時代的「${factionName}」這個主題。內容應包含其核心思想、社會背景、與耶穌或早期教會的主要互動或衝突，以及它在歷史中的影響或結局。請使用繁體中文回答。`;
+                        fetchGeminiResponse(prompt, container);
+                    });
+
+                });
             };
             
             const renderCanonTimeline = () => {
-                const container = document.querySelector('#canon-view .relative');
+                const container = document.getElementById('canon-timeline-container');
                 container.innerHTML = canonData.map(item => `
                     <div class="mb-8">
                         <div class="flex items-center mb-1">
@@ -454,16 +623,33 @@
                         <div class="ml-8">
                             <h4 class="font-semibold text-xl text-[#3D352A]">${item.title}</h4>
                             <p class="mt-1 text-gray-600">${item.text}</p>
+                            <div class="gemini-interaction-container mt-4">
+                                <button class="gemini-button bg-[#C0A062] text-white font-bold py-2 px-3 rounded-lg shadow-md text-sm" data-title="${item.title}">✨ 探索此里程碑的意義</button>
+                                <div class="gemini-loader hidden mt-4 flex items-center gap-3">
+                                    <div class="loader"></div>
+                                    <span class="text-gray-600">正在生成更深入的解析...</span>
+                                </div>
+                                <div class="gemini-response mt-4 text-gray-800 border-t pt-4 border-gray-200"></div>
+                            </div>
                         </div>
                     </div>
                 `).join('');
+
+                // Add event listeners for the newly created buttons
+                container.querySelectorAll('.gemini-button').forEach(button => {
+                    button.addEventListener('click', () => {
+                        const title = button.dataset.title;
+                        const container = button.closest('.gemini-interaction-container');
+                        const prompt = `在基督新教的歷史神學觀點下，請深入解析「${title}」在新約正典形成過程中的重要性。請解釋其歷史背景、主要內容以及它對確立新約權威文本的具體貢獻。請使用繁體中文回答。`;
+                        fetchGeminiResponse(prompt, container);
+                    });
+                });
             };
 
             // Initial setup
-            document.getElementById('gemini-button').addEventListener('click', fetchGeminiExplanation);
             setupNavigation();
             createTimelineChart();
-            updateDetailView({event: '歡迎', details: '請在上方圖表選擇一個事件點以查看詳細資訊。', year: ''});
+            updateDetailView({event: '歡迎', details: '請在上方圖表中選擇一個事件點以查看詳細資訊。', year: ''});
         });
     </script>
 </body>
